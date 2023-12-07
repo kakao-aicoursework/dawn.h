@@ -3,6 +3,7 @@ import openai
 import chromadb
 import tkinter as tk
 import pandas as pd
+from langchain.text_splitter import CharacterTextSplitter
 from tkinter import scrolledtext
 import tkinter.filedialog as filedialog
 import os
@@ -44,21 +45,16 @@ def load_text_file(text_file_path: str):
     with open(text_file_path, 'r', encoding='utf-8') as f:
         text = f.read()
 
-    text_list = text.split("\n")
+    text_splitter = CharacterTextSplitter(
+        separator="\n",
+        chunk_size=1000,
+        chunk_overlap=200,
+        length_function=len,
+    )
+    texts = text_splitter.split_text(text)
 
-    text_dict = {"id": [], "text": []}
-    append_text = ""
-    new_title = ""
-    for line in text_list:
-        if line.startswith("#"):
-            text_dict["id"].append(new_title)
-            text_dict["text"].append(append_text)
-            new_title = line[1:].strip()
-            append_text = ""
-        else:
-            append_text += line.strip()
-
-    print(text_dict)
+    text_dict= {"id": [], "text": texts}
+    text_dict["id"] = [f"{i}" for i in range(len(texts))]
 
     return text_dict
 
@@ -85,7 +81,6 @@ def send_message(message_log, functions, gpt_model="gpt-3.5-turbo", temperature=
         # 사용하는 함수에 따라 사용하는 인자의 개수와 내용이 달라질 수 있으므로
         # **function_args로 처리하기
         function_response = fuction_to_call(**function_args)
-        print("function_response", function_response)
 
         # 함수를 실행한 결과를 GPT에게 보내 답을 받아오기 위한 부분
         message_log.append(response_message)  # GPT의 지난 답변을 message_logs에 추가하기
@@ -93,7 +88,7 @@ def send_message(message_log, functions, gpt_model="gpt-3.5-turbo", temperature=
             {
                 "role": "function",
                 "name": function_name,
-                "content": [function_response],
+                "content": function_response,
             }
         )  # 함수 실행 결과도 GPT messages에 추가하기
         response = openai.ChatCompletion.create(
@@ -196,9 +191,9 @@ def main():
 
     conversation = scrolledtext.ScrolledText(window, wrap=tk.WORD, bg='#f0f0f0', font=font)
     # width, height를 없애고 배경색 지정하기(2)
-    conversation.tag_configure("user", background="#c9daf8")
+    conversation.tag_configure("user", background="#292828")
     # 태그별로 다르게 배경색 지정하기(3)
-    conversation.tag_configure("assistant", background="#e4e4e4")
+    conversation.tag_configure("assistant", background="#424242")
     # 태그별로 다르게 배경색 지정하기(3)
     conversation.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
     # 창의 폭에 맞추어 크기 조정하기(4)
