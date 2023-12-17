@@ -5,9 +5,10 @@ from fastapi.responses import HTMLResponse
 from dto import ChatbotRequest
 from samples import simple_text_sample, basic_card_sample, commerce_card_sample
 from callback import callback_handler
-import openai
+from llmgenerator import LLMGenerator
 
 app = FastAPI()
+generator = LLMGenerator()
 
 @app.get("/")
 async def home():
@@ -36,7 +37,7 @@ async def skill(req: ChatbotRequest):
 @app.post("/callback")
 async def skill(req: ChatbotRequest, background_tasks: BackgroundTasks):
     #핸들러 호출 / background_tasks 변경가능
-    background_tasks.add_task(callback_handler, req)
+    background_tasks.add_task(callback_handler, req, generator)
     out = {
         "version" : "2.0",
         "useCallback" : True,

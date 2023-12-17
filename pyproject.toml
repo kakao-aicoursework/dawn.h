@@ -12,6 +12,7 @@ openai = "0.28"
 chromadb = "^0.4.18"
 langchain = "^0.0.347"
 tiktoken = "^0.5.2"
+google-api-wrapper = "^2.0.0a1"
 
 [tool.poetry.group.dev.dependencies]
 pandas = "^2.1.3"
