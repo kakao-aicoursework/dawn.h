@@ -1,7 +1,5 @@
-bug: Related to a bug, vulnerability, unexpected error with an existing feature
-documentation: Changes to documentation and examples, like .md, .rst, .ipynb files. Changes to the docs/ folder
-enhancement: A large net-new component, integration, or chain. Use sparingly. The largest features
-improvement: Medium size change to existing code to handle new use-cases
-nit: Small modifications/deletions, fixes, deps or improvements to existing code or docs
-question: A specific question about the codebase, product, project, or how to use a feature
-refactor: A large refactor of a feature(s) or restructuring of many files
+카카오싱크: 소셜 로그인인 카카오 로그인을 통해 보다 편리하게 서비스에 가입할 수 있도록 도와주는 비즈니스 설루션
+카카오소셜: 서비스의 소셜 기능 구현을 위한 사용자의 카카오톡 프로필과 친구 정보를 제공하는 API
+카카오톡채널: 카카오톡 사용자들에게 다양한 서비스 소식을 메시지와 게시물 형태로 전파할 수 있는 서비스
+일반질문: 카카오싱크, 카카오소셜, 카카오톡채널 외의 카카오 API를 사용하면서 발생한 문의사항
+심화질문: 제공한 답변보다 인터넷 검색을 통해 데이터베이스에 없는 내용을 알고 싶을 때

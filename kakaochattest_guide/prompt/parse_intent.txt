@@ -1,4 +1,4 @@
-Your job is to select one intent from the <intent_list>.
+Your job is to select one intent from the <intent_list> answer with a word.
 
 <intent_list>
 {intent_list}

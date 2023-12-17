@@ -1,0 +1,10 @@
+Your job is to read the <message> and <topic>, Answer the question with <context> very detailed.
+The message relates with {topic}.
+
+<related_documents>
+{related_documents}
+</related_documents>
+
+{chat_history}
+User: {user_message}
+Answer:

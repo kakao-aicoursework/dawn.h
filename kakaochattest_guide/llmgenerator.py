@@ -18,9 +18,7 @@ openai.api_key = os.environ["GPT_KEY"]
 os.environ["OPENAI_API_KEY"] = os.environ["GPT_KEY"]
 
 CUR_DIR = os.path.dirname(os.path.abspath('./kakaochattest_guide'))
-BUG_STEP1_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/bug_analyze.txt")
-BUG_STEP2_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/bug_solution.txt")
-ENHANCE_STEP1_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/enhancement_say_thanks.txt")
+DB_SEARCH_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/db_search_response.txt")
 DEFAULT_RESPONSE_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/default_response.txt")
 INTENT_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/parse_intent.txt")
 SEARCH_VALUE_CHECK_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/search_value_check.txt")
@@ -57,20 +55,14 @@ class LLMGenerator:
 
     def initialize_chains(self, llm):
         self.chains = {}
-        self.chains["bug_step1_chain"] = LLMGenerator.create_chain(
-            llm=llm,
-            template_path=BUG_STEP1_PROMPT_TEMPLATE,
-            output_key="bug_analysis",
+        self.chains["싱크_db_search_chain"] = LLMGenerator.create_chain(
+            llm=llm, template_path=DB_SEARCH_PROMPT_TEMPLATE, output_key="output"
         )
-        self.chains["bug_step2_chain"] = LLMGenerator.create_chain(
-            llm=llm,
-            template_path=BUG_STEP2_PROMPT_TEMPLATE,
-            output_key="output",
+        self.chains["소셜_db_search_chain"] = LLMGenerator.create_chain(
+            llm=llm, template_path=DB_SEARCH_PROMPT_TEMPLATE, output_key="output"
         )
-        self.chains["enhance_step1_chain"] = LLMGenerator.create_chain(
-            llm=llm,
-            template_path=ENHANCE_STEP1_PROMPT_TEMPLATE,
-            output_key="output",
+        self.chains["톡채널_db_search_chain"] = LLMGenerator.create_chain(
+            llm=llm, template_path=DB_SEARCH_PROMPT_TEMPLATE, output_key="output"
         )
         self.chains["parse_intent_chain"] = LLMGenerator.create_chain(
             llm=llm,
@@ -99,19 +91,27 @@ class LLMGenerator:
         context["intent_list"] = LLMGenerator.read_prompt_template(INTENT_LIST_TXT)
         context["chat_history"] = self.history.get_chat_history()
 
-        # intent = parse_intent_chain(context)["intent"]
         intent = self.chains["parse_intent_chain"].run(context)
-
-        if intent == "bug":
+        print(intent)
+        if intent == "카카오싱크":
+            context["topic"] = "카카오싱크"
             context["related_documents"] = self.db.query_db(context["user_message"])
-
-            answer = ""
-            for step in [self.chains["bug_step1_chain"], self.chains["bug_step2_chain"]]:
-                context = step(context)
-                answer += context[step.output_key]
-                answer += "\n\n"
-        elif intent == "enhancement":
-            answer = self.chains["enhance_step1_chain"].run(context)
+            answer = self.chains["싱크_db_search_chain"].run(context)
+        elif intent == "카카오소셜":
+            context["topic"] = "카카오소셜"
+            context["related_documents"] = self.db.query_db(context["user_message"])
+            answer = self.chains["소셜_db_search_chain"].run(context)
+        elif intent == "카카오톡채널":
+            context["topic"] = "카카오톡채널"
+            context["related_documents"] = self.db.query_db(context["user_message"])
+            answer = self.chains["톡채널_db_search_chain"].run(context)
+        elif intent == "심화질문":
+            context["topic"] = "검색 결과에 심화 질문"
+            context["related_documents"] = self.db.query_db(context["user_message"])
+            context["compressed_web_search_results"] = self.query_web_search(
+                context["user_message"]
+            )
+            answer = self.chains["default_chain"].run(context)
         else:
             context["related_documents"] = self.db.query_db(context["user_message"])
             context["compressed_web_search_results"] = self.query_web_search(
@@ -152,4 +152,4 @@ class LLMGenerator:
 
 if __name__ == "__main__":
     generator = LLMGenerator()
-    print(generator.request_query("안녕하세요"))
+    print(generator.request_query("카카오싱크 실행 방법은?"))
