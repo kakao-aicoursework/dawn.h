@@ -20,6 +20,7 @@ os.environ["OPENAI_API_KEY"] = os.environ["GPT_KEY"]
 CUR_DIR = os.path.dirname(os.path.abspath('./kakaochattest_guide'))
 DB_SEARCH_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/db_search_response.txt")
 DEFAULT_RESPONSE_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/default_response.txt")
+NORMAL_RESPONSE_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/normal_response.txt")
 INTENT_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/parse_intent.txt")
 SEARCH_VALUE_CHECK_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/search_value_check.txt")
 SEARCH_COMPRESSION_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/search_compress.txt")
@@ -72,7 +73,9 @@ class LLMGenerator:
         self.chains["default_chain"] = LLMGenerator.create_chain(
             llm=llm, template_path=DEFAULT_RESPONSE_PROMPT_TEMPLATE, output_key="output"
         )
-
+        self.chains["normal_chain"] = LLMGenerator.create_chain(
+            llm=llm, template_path=NORMAL_RESPONSE_PROMPT_TEMPLATE, output_key="output"
+        )
         self.chains["search_value_check_chain"] = LLMGenerator.create_chain(
             llm=llm,
             template_path=SEARCH_VALUE_CHECK_PROMPT_TEMPLATE,
@@ -93,19 +96,19 @@ class LLMGenerator:
 
         intent = self.chains["parse_intent_chain"].run(context)
         print(intent)
-        if intent == "카카오싱크":
+        if "카카오싱크" in intent:
             context["topic"] = "카카오싱크"
             context["related_documents"] = self.db.query_db(context["user_message"])
             answer = self.chains["싱크_db_search_chain"].run(context)
-        elif intent == "카카오소셜":
+        elif "카카오소셜" in intent:
             context["topic"] = "카카오소셜"
             context["related_documents"] = self.db.query_db(context["user_message"])
             answer = self.chains["소셜_db_search_chain"].run(context)
-        elif intent == "카카오톡채널":
+        elif "카카오톡채널" in intent:
             context["topic"] = "카카오톡채널"
             context["related_documents"] = self.db.query_db(context["user_message"])
             answer = self.chains["톡채널_db_search_chain"].run(context)
-        elif intent == "심화질문":
+        elif "심화질문" in intent:
             context["topic"] = "검색 결과에 심화 질문"
             context["related_documents"] = self.db.query_db(context["user_message"])
             context["compressed_web_search_results"] = self.query_web_search(
@@ -113,11 +116,7 @@ class LLMGenerator:
             )
             answer = self.chains["default_chain"].run(context)
         else:
-            context["related_documents"] = self.db.query_db(context["user_message"])
-            context["compressed_web_search_results"] = self.query_web_search(
-                context["user_message"]
-            )
-            answer = self.chains["default_chain"].run(context)
+            answer = self.chains["normal_chain"].run(context)
 
         self.history.log_user_message(user_message)
         self.history.log_bot_message(answer)

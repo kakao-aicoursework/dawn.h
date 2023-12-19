@@ -9,7 +9,7 @@ logger = logging.getLogger("Callback")
 def callback_handler(request: ChatbotRequest, generator: LLMGenerator) -> dict:
 
     # ===================== start =================================
-    output_text = generator.request_query(request.userRequest.utterance)
+    output_text = generator.request_query(request.userRequest.utterance)['answer']
 
    # 참고링크 통해 payload 구조 확인 가능
     payload = {
