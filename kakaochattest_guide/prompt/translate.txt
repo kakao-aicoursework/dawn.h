@@ -1,0 +1,5 @@
+Your job is to translate the <message> to english for searching google.
+You have to extract some keywords from the <message> to easily search google.
+
+User: {user_message}
+Answer:

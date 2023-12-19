@@ -21,6 +21,7 @@ CUR_DIR = os.path.dirname(os.path.abspath('./kakaochattest_guide'))
 DB_SEARCH_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/db_search_response.txt")
 DEFAULT_RESPONSE_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/default_response.txt")
 NORMAL_RESPONSE_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/normal_response.txt")
+TRANSLATE_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/translate.txt")
 INTENT_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/parse_intent.txt")
 SEARCH_VALUE_CHECK_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/search_value_check.txt")
 SEARCH_COMPRESSION_PROMPT_TEMPLATE = os.path.join(CUR_DIR, "prompt/search_compress.txt")
@@ -47,7 +48,8 @@ class LLMGenerator:
         )
 
     def query_web_search(self, user_message: str) -> str:
-        context = {"user_message": user_message, "related_web_search_results": self.search_tool.run(user_message)}
+        translation = self.chains["translate_chain"].run({"user_message": user_message})
+        context = {"user_message": user_message, "related_web_search_results": self.search_tool.run(translation)}
         has_value = self.chains["search_value_check_chain"].run(context)
         if has_value == "Y":
             return self.chains["search_compression_chain"].run(context)
@@ -75,6 +77,9 @@ class LLMGenerator:
         )
         self.chains["normal_chain"] = LLMGenerator.create_chain(
             llm=llm, template_path=NORMAL_RESPONSE_PROMPT_TEMPLATE, output_key="output"
+        )
+        self.chains["translate_chain"] = LLMGenerator.create_chain(
+            llm=llm, template_path=TRANSLATE_PROMPT_TEMPLATE, output_key="output"
         )
         self.chains["search_value_check_chain"] = LLMGenerator.create_chain(
             llm=llm,
@@ -151,4 +156,6 @@ class LLMGenerator:
 
 if __name__ == "__main__":
     generator = LLMGenerator()
-    print(generator.request_query("카카오싱크 실행 방법은?"))
+    # print(generator.request_query("카카오싱크 실행 방법은?"))
+    result = generator.search_tool.run("Obama's first name?")
+    print(result)
